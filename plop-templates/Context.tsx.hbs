@@ -1,0 +1,21 @@
+import React, { createContext } from "react";
+import { WithChildren } from "../lib/interfaces";
+
+interface {{pascalCase name}}ContextProps {
+  // add properties here
+}
+
+export const {{pascalCase name}}Context = createContext<{{pascalCase name}}ContextProps>({
+  // default context values
+} as {{pascalCase name}}ContextProps);
+
+export const {{pascalCase name}}Provider: React.FC<WithChildren> = ({ children }) => {
+
+  let providerValues = {};
+
+  return (
+    <{{pascalCase name}}Context.Provider value={providerValues}>
+      {children}
+    </{{pascalCase name}}Context.Provider>
+  )
+};
