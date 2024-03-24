@@ -1,10 +1,7 @@
 import React from 'react';
-import { I18nextProvider } from 'react-i18next';
+import { vi } from 'vitest';
 import { render, RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { vi } from 'vitest';
-import i18n from './i18n';
-import { AuthProvider } from '../contexts/AuthContext';
 
 const mocks = vi.hoisted(() => ({
   get: vi.fn(),
@@ -42,11 +39,7 @@ type TestProvidersProps = {
 };
 
 const TestProviders: React.FC<TestProvidersProps> = ({ children }) => (
-  <I18nextProvider i18n={i18n}>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>{children}</AuthProvider>
-    </QueryClientProvider>
-  </I18nextProvider>
+  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 );
 
 const renderWithTestProviders = (
