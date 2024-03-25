@@ -9,6 +9,7 @@ import {
   getDocs,
   getFirestore,
   query,
+  updateDoc,
 } from 'firebase/firestore/lite';
 import { Task } from './interfaces';
 import { FirestoreDataConverter } from 'firebase/firestore/lite';
@@ -43,11 +44,15 @@ export const getTaskCollection = () => {
 };
 
 export const deleteTaskDocument = async (id: string) => {
-  const taskDocument = doc(taskCollectionReference, id);
-  await deleteDoc(taskDocument);
+  const taskDocumentRef = doc(taskCollectionReference, id);
+  await deleteDoc(taskDocumentRef);
 };
 
-export const updateTaskDocument = async (task: Task) => {};
+export const updateTaskDocument = async (task: Task) => {
+  const taskDocumentRef = doc(taskCollectionReference, task.id);
+  const { id, ...updates } = task;
+  await updateDoc(taskDocumentRef, updates);
+};
 
 const taskConverter: FirestoreDataConverter<Task> = {
   toFirestore(task: Task) {

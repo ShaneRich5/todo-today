@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Countdown from 'react-countdown';
-import { Task } from '@/lib/interfaces';
+import { AvailableStatus, Task } from '@/lib/interfaces';
 import DeleteTaskModal from '@/components/tasks/DeleteTaskModal';
 import CreateTaskModal from '@/components/tasks/CreateTaskModal';
 import { useToast } from '@/components/ui/use-toast';
@@ -12,6 +12,7 @@ import {
   createTaskDocument,
   deleteTaskDocument,
   getTaskCollection,
+  updateTaskDocument,
 } from './lib/firebase';
 
 const TaskCard = () => {
@@ -187,6 +188,33 @@ export default function App() {
     document.getElementById('delete-task-modal')?.close();
   }, [taskIdToDelete]);
 
+  const handleTaskStatusChange = useCallback(
+    async (task: Task, status: AvailableStatus) => {
+      const updatedTask = {
+        ...task,
+        status,
+      };
+
+      await updateTaskDocument(updatedTask);
+      await fetchTaskList();
+
+      toast({ description: 'Task status updated!' });
+    },
+    []
+  );
+
+  const organizeTasksByStatus = (tasks: Task[]) => {
+    return tasks.sort((a, b) => {
+      if (a.status === STATUS.COMPLETED) {
+        return 1;
+      } else if (a.status === STATUS.IN_PROGRESS) {
+        return 0;
+      } else if (a.status === STATUS.TODO) {
+        return -1;
+      }
+    });
+  };
+
   const parseMetaFromTask = (task: Task, meta: string) => {
     console.log(task, meta);
     if (task.meta && task.meta[meta]) {
@@ -270,7 +298,7 @@ export default function App() {
                           </td>
                         </tr>
                       )}
-                      {tasks.map((task) => (
+                      {organizeTasksByStatus(tasks).map((task) => (
                         <tr key={task.id}>
                           <th className="w-44">
                             <div className="space-x-2">
@@ -293,7 +321,16 @@ export default function App() {
                           <td>{task.title}</td>
                           <td>{truncate(task.description ?? '', 29)}</td>
                           <td>
-                            <select className="select select-bordered w-full max-w-xs">
+                            <select
+                              className="select select-bordered w-full max-w-xs"
+                              value={task.status}
+                              onChange={(event) =>
+                                handleTaskStatusChange(
+                                  task,
+                                  event.target.value as AvailableStatus
+                                )
+                              }
+                            >
                               <option value="todo">To Do</option>
                               <option value="in-progress">In Progress</option>
                               <option value="completed">Completed</option>
