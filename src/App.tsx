@@ -3,11 +3,10 @@ import Countdown from 'react-countdown';
 import { Task } from '@/lib/interfaces';
 import CreateTaskModal from '@/components/tasks/CreateTaskModal';
 import { useToast } from '@/components/ui/use-toast';
-import { CSVLink, CSVDownload } from 'react-csv';
+import { CSVLink } from 'react-csv';
 import Calendar from './components/Calendar';
 import { STATUS } from './lib/constants';
 import { truncate } from './lib/utils';
-import StatusBadge from './components/StatusBadge';
 
 const TaskCard = () => {
   return (
@@ -260,7 +259,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* <div className="flex flex-col items-center space-y-4 ">
+          {/*
+          <div className="flex flex-col items-center space-y-4 ">
             {!isAddingNewTask && (
               <AddTaskAction onClick={() => setIsAddingNewTask(true)} />
             )}
@@ -270,7 +270,8 @@ export default function App() {
             <TaskCard />
             <TaskCard />
             <TaskCard />
-          </div> */}
+          </div>
+          */}
         </div>
       </main>
     </>
