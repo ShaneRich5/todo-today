@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Countdown from 'react-countdown';
 import { Task } from '@/lib/interfaces';
+import DeleteTaskModal from '@/components/tasks/DeleteTaskModal';
 import CreateTaskModal from '@/components/tasks/CreateTaskModal';
 import { useToast } from '@/components/ui/use-toast';
 import { CSVLink } from 'react-csv';
 import Calendar from './components/Calendar';
 import { STATUS } from './lib/constants';
 import { truncate } from './lib/utils';
+import {
+  createTaskDocument,
+  deleteTaskDocument,
+  getTaskCollection,
+} from './lib/firebase';
 
 const TaskCard = () => {
   return (
@@ -132,14 +138,24 @@ export default function App() {
   const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>(sampleTasks);
   const [metas, setMetas] = useState<string[]>([]);
+  const [taskIdToDelete, setTaskIdToDelete] = useState<string | null>(null);
 
-  const createMeta = (key: string) => {
+  const fetchTaskList = useCallback(async () => {
+    const results = await getTaskCollection();
+    setTasks(results.docs.map((doc) => doc.data()));
+  }, []);
+
+  useEffect(() => {
+    fetchTaskList();
+  }, []);
+
+  const handleCreatingNewMeta = (key: string) => {
     setMetas([...metas, key]);
     document.getElementById('create-meta-modal')?.close();
     toast({ description: `Add meta: ${key}` });
   };
 
-  const createTask = (
+  const handleCreatingNewTask = (
     title: string,
     description: string | null,
     taskMeta: { [key: string]: string }
@@ -152,12 +168,24 @@ export default function App() {
       status: STATUS.TODO,
     };
 
-    setTasks([...tasks, newTask]);
+    createTaskDocument(newTask);
+    fetchTaskList();
 
     document.getElementById('create-task-modal')?.close();
 
     toast({ description: 'Task created!' });
   };
+
+  const handleTaskDeletion = useCallback(async () => {
+    if (!taskIdToDelete) {
+      toast({ description: 'No task selected to delete' });
+    } else {
+      await deleteTaskDocument(taskIdToDelete);
+      await fetchTaskList();
+    }
+
+    document.getElementById('delete-task-modal')?.close();
+  }, [taskIdToDelete]);
 
   const parseMetaFromTask = (task: Task, meta: string) => {
     console.log(task, meta);
@@ -181,8 +209,14 @@ export default function App() {
         <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
           {/* <PomodoroTimer /> */}
 
-          <CreateMetaModal onSubmit={createMeta} />
-          <CreateTaskModal onSubmit={createTask} metas={metas} />
+          <CreateMetaModal onSubmit={handleCreatingNewMeta} />
+          <CreateTaskModal onSubmit={handleCreatingNewTask} metas={metas} />
+          <DeleteTaskModal
+            onConfirm={() => handleTaskDeletion()}
+            onCancel={() =>
+              document.getElementById('delete-task-modal')?.close()
+            }
+          />
 
           {/* Action Panel */}
           <div className="space-y-4">
@@ -219,7 +253,7 @@ export default function App() {
                     {/* head */}
                     <thead>
                       <tr>
-                        <th></th>
+                        <th>Actions</th>
                         <th>Title</th>
                         <th>Description</th>
                         <th className="w-44 text-center">Status</th>
@@ -229,9 +263,33 @@ export default function App() {
                       </tr>
                     </thead>
                     <tbody>
+                      {tasks.length === 0 && (
+                        <tr>
+                          <td colSpan={4} className="text-center">
+                            No tasks added yet
+                          </td>
+                        </tr>
+                      )}
                       {tasks.map((task) => (
                         <tr key={task.id}>
-                          <th>{task.id}</th>
+                          <th className="w-44">
+                            <div className="space-x-2">
+                              <button className="btn btn-sm btn-primary">
+                                Edit
+                              </button>
+                              <button
+                                className="btn btn-sm btn-outline"
+                                onClick={() => {
+                                  document
+                                    .getElementById('delete-task-modal')
+                                    ?.showModal();
+                                  setTaskIdToDelete(task.id);
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </th>
                           <td>{task.title}</td>
                           <td>{truncate(task.description ?? '', 29)}</td>
                           <td>

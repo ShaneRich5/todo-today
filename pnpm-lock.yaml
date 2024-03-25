@@ -83,9 +83,6 @@ dependencies:
   react-dom:
     specifier: ^18.2.0
     version: 18.2.0(react@18.2.0)
-  react-firebase-hooks:
-    specifier: ^5.1.1
-    version: 5.1.1(firebase@10.9.0)(react@18.2.0)
   react-hook-form:
     specifier: ^7.51.1
     version: 7.51.1(react@18.2.0)
@@ -12682,19 +12679,6 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
       react-is: 18.1.0
     dev: true
-
-  /react-firebase-hooks@5.1.1(firebase@10.9.0)(react@18.2.0):
-    resolution:
-      {
-        integrity: sha512-y2UpWs82xs+39q5Rc/wq316ca52QsC0n8m801V+yM4IC4hbfOL4yQPVSh7w+ydstdvjN9F+lvs1WrO2VYxpmdA==,
-      }
-    peerDependencies:
-      firebase: '>= 9.0.0'
-      react: '>= 16.8.0'
-    dependencies:
-      firebase: 10.9.0
-      react: 18.2.0
-    dev: false
 
   /react-hook-form@7.51.1(react@18.2.0):
     resolution:
