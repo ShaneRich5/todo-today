@@ -43,11 +43,11 @@ export const getTaskCollection = () => {
 };
 
 export const deleteTaskDocument = async (id: string) => {
-  console.log('id:', id);
   const taskDocument = doc(taskCollectionReference, id);
-  console.log('taskDocument:', taskDocument);
   await deleteDoc(taskDocument);
 };
+
+export const updateTaskDocument = async (task: Task) => {};
 
 const taskConverter: FirestoreDataConverter<Task> = {
   toFirestore(task: Task) {
