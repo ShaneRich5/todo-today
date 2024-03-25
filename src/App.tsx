@@ -5,6 +5,9 @@ import CreateTaskModal from '@/components/tasks/CreateTaskModal';
 import { useToast } from '@/components/ui/use-toast';
 import { CSVLink, CSVDownload } from 'react-csv';
 import Calendar from './components/Calendar';
+import { STATUS } from './lib/constants';
+import { truncate } from './lib/utils';
+import StatusBadge from './components/StatusBadge';
 
 const TaskCard = () => {
   return (
@@ -116,8 +119,14 @@ const sampleTasks = [
     title: 'Deploy the Todo Today App!',
     description:
       'Complete the inital MVP with the export feature. Jot down any additional requirements as tickets to be completed later.',
+    status: STATUS.TODO,
   },
-  { id: '2', title: 'Task 2', description: 'Description 2' },
+  {
+    id: '2',
+    title: 'Task 2',
+    description: 'Description 2',
+    status: STATUS.TODO,
+  },
 ];
 
 export default function App() {
@@ -141,6 +150,7 @@ export default function App() {
       title,
       description,
       meta: taskMeta,
+      status: STATUS.TODO,
     };
 
     setTasks([...tasks, newTask]);
@@ -213,6 +223,7 @@ export default function App() {
                         <th></th>
                         <th>Title</th>
                         <th>Description</th>
+                        <th className="w-44 text-center">Status</th>
                         {metas.map((meta) => (
                           <th key={meta}>{meta}</th>
                         ))}
@@ -223,7 +234,14 @@ export default function App() {
                         <tr key={task.id}>
                           <th>{task.id}</th>
                           <td>{task.title}</td>
-                          <td>{task.description}</td>
+                          <td>{truncate(task.description ?? '', 29)}</td>
+                          <td>
+                            <select className="select select-bordered w-full max-w-xs">
+                              <option value="todo">To Do</option>
+                              <option value="in-progress">In Progress</option>
+                              <option value="completed">Completed</option>
+                            </select>
+                          </td>
                           {metas.map((meta) => (
                             <td key={`task-${meta}`}>
                               {parseMetaFromTask(task, meta)}
