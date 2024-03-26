@@ -18,6 +18,7 @@ import Navbar from './components/shared/Navbar';
 import { Route, Routes } from 'react-router-dom';
 import DashboardPage from './pages/DashboardPage';
 import Layout from './components/shared/Layout';
+import ProjectListPage from './pages/ProjectListPage';
 
 interface TaskCardProp {
   task: Task;
@@ -131,6 +132,7 @@ const App = () => (
   <Routes>
     <Route element={<Layout />}>
       <Route path="/" element={<DashboardPage />} />
+      <Route path="/task-templates" element={<ProjectListPage />} />
     </Route>
   </Routes>
 );

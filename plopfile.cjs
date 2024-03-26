@@ -38,4 +38,22 @@ module.exports = function (plop) {
       },
     ],
   });
+
+  plop.setGenerator('page', {
+    description: 'create a new page',
+    prompts: [
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Provide a name for you page',
+      },
+    ],
+    actions: [
+      {
+        type: 'add',
+        path: 'src/pages/{{pascalCase name}}Page.tsx',
+        templateFile: 'plop-templates/Page.tsx.hbs',
+      },
+    ],
+  });
 };

@@ -16,7 +16,8 @@
     "format:check": "prettier --check .",
     "prepare": "husky",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "plop": "plop"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",

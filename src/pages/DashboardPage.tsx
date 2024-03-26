@@ -14,7 +14,6 @@ import {
   getTaskCollection,
   updateTaskDocument,
 } from '@/lib/firebase';
-import Navbar from '@/components/shared/Navbar';
 import TaskCard from '../components/tasks/TaskCard';
 
 const sampleCsvData = [
@@ -141,152 +140,128 @@ const DashboardPage = () => {
   };
 
   return (
-    <>
-      <main>
-        <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
-          {/* <PomodoroTimer /> */}
+    <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
+      {/* <PomodoroTimer /> */}
 
-          <CreateMetaModal onSubmit={handleCreatingNewMeta} />
-          <CreateTaskModal onSubmit={handleCreatingNewTask} metas={metas} />
-          <DeleteTaskModal
-            onConfirm={() => handleTaskDeletion()}
-            onCancel={() =>
-              document.getElementById('delete-task-modal')?.close()
-            }
-          />
+      <CreateMetaModal onSubmit={handleCreatingNewMeta} />
+      <CreateTaskModal onSubmit={handleCreatingNewTask} metas={metas} />
+      <DeleteTaskModal
+        onConfirm={() => handleTaskDeletion()}
+        onCancel={() => document.getElementById('delete-task-modal')?.close()}
+      />
 
-          {/* Action Panel */}
-          <div className="space-y-4">
-            <div className="flex justify-end">
-              <div className="flex space-x-2">
-                <CSVLink data={sampleCsvData}>
-                  <button className="btn btn-primary">Export</button>
-                </CSVLink>
-                <button
-                  className="btn btn-primary"
-                  onClick={() =>
-                    document.getElementById('create-meta-modal')?.showModal()
-                  }
-                >
-                  Add Meta
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={() =>
-                    document.getElementById('create-task-modal')?.showModal()
-                  }
-                >
-                  Add Task
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              {tasks
-                .filter((task) => task.status === 'in-progress')
-                .map((task) => (
-                  <TaskCard key={task.id} task={task} />
-                ))}
-            </div>
-
-            <div className="card card-bordered bg-base-100">
-              <div className="card-body">
-                <h2 className="card-title">Project A</h2>
-                {/* May need to move this out out of card-body */}
-                <div className="overflow-x-auto -mx-8">
-                  <table className="table table-zebra">
-                    {/* head */}
-                    <thead>
-                      <tr>
-                        <th>Actions</th>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th className="w-44 text-center">Status</th>
-                        {metas.map((meta) => (
-                          <th key={meta}>{meta}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {tasks.length === 0 && (
-                        <tr>
-                          <td colSpan={4} className="text-center">
-                            No tasks added yet
-                          </td>
-                        </tr>
-                      )}
-                      {organizeTasksByStatus(tasks).map((task) => (
-                        <tr key={task.id}>
-                          <th className="w-44">
-                            <div className="space-x-2">
-                              <button className="btn btn-sm btn-primary">
-                                Edit
-                              </button>
-                              <button
-                                className="btn btn-sm btn-outline"
-                                onClick={() => {
-                                  document
-                                    .getElementById('delete-task-modal')
-                                    ?.showModal();
-                                  setTaskIdToDelete(task.id);
-                                }}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </th>
-                          <td>{task.title}</td>
-                          <td>{truncate(task.description ?? '', 29)}</td>
-                          <td>
-                            <select
-                              className="select select-bordered w-full max-w-xs"
-                              value={task.status}
-                              onChange={(event) =>
-                                handleTaskStatusChange(
-                                  task,
-                                  event.target.value as AvailableStatus
-                                )
-                              }
-                            >
-                              <option value="todo">To Do</option>
-                              <option value="in-progress">In Progress</option>
-                              <option value="completed">Completed</option>
-                            </select>
-                          </td>
-                          {metas.map((meta) => (
-                            <td key={`task-${meta}`}>
-                              {parseMetaFromTask(task, meta)}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <div className="card card-bordered bg-base-100">
-              <Calendar />
-            </div>
+      {/* Action Panel */}
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <div className="flex space-x-2">
+            <CSVLink data={sampleCsvData}>
+              <button className="btn btn-outline btn-sm">Export</button>
+            </CSVLink>
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={() =>
+                document.getElementById('create-meta-modal')?.showModal()
+              }
+            >
+              Add Meta
+            </button>
+            <button
+              className="btn btn-outline btn-sm"
+              onClick={() =>
+                document.getElementById('create-task-modal')?.showModal()
+              }
+            >
+              Add Task
+            </button>
           </div>
-
-          {/*
-          <div className="flex flex-col items-center space-y-4 ">
-            {!isAddingNewTask && (
-              <AddTaskAction onClick={() => setIsAddingNewTask(true)} />
-            )}
-            {isAddingNewTask && <CreateTaskModal />}
-
-            <TaskCard />
-            <TaskCard />
-            <TaskCard />
-            <TaskCard />
-          </div>
-          */}
         </div>
-      </main>
-    </>
+
+        <div className="grid grid-cols-3 gap-4">
+          {tasks
+            .filter((task) => task.status === 'in-progress')
+            .map((task) => (
+              <TaskCard key={task.id} task={task} />
+            ))}
+        </div>
+
+        <div className="card card-bordered bg-base-100">
+          <div className="card-body">
+            <h2 className="card-title">Tasks</h2>
+            {/* May need to move this out out of card-body */}
+            <div className="overflow-x-auto -mx-8">
+              <table className="table table-zebra">
+                {/* head */}
+                <thead>
+                  <tr>
+                    <th>Actions</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th className="w-44 text-center">Status</th>
+                    {metas.map((meta) => (
+                      <th key={meta}>{meta}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="text-center">
+                        No tasks added yet
+                      </td>
+                    </tr>
+                  )}
+                  {organizeTasksByStatus(tasks).map((task) => (
+                    <tr key={task.id}>
+                      <th className="w-44">
+                        <div className="space-x-2">
+                          <button className="btn btn-sm btn-primary">
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline"
+                            onClick={() => {
+                              document
+                                .getElementById('delete-task-modal')
+                                ?.showModal();
+                              setTaskIdToDelete(task.id);
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </th>
+                      <td>{task.title}</td>
+                      <td>{truncate(task.description ?? '', 29)}</td>
+                      <td>
+                        <select
+                          className="select select-bordered w-full max-w-xs select-sm"
+                          value={task.status}
+                          onChange={(event) =>
+                            handleTaskStatusChange(
+                              task,
+                              event.target.value as AvailableStatus
+                            )
+                          }
+                        >
+                          <option value="todo">To Do</option>
+                          <option value="in-progress">In Progress</option>
+                          <option value="completed">Completed</option>
+                        </select>
+                      </td>
+                      {metas.map((meta) => (
+                        <td key={`task-${meta}`}>
+                          {parseMetaFromTask(task, meta)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
