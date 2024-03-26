@@ -5,24 +5,32 @@ import DeleteTaskModal from '@/components/tasks/DeleteTaskModal';
 import CreateTaskModal from '@/components/tasks/CreateTaskModal';
 import { useToast } from '@/components/ui/use-toast';
 import { CSVLink } from 'react-csv';
-import Calendar from './components/Calendar';
-import { STATUS } from './lib/constants';
-import { truncate } from './lib/utils';
+import Calendar from '@/components/Calendar';
+import { STATUS } from '@/lib/constants';
+import { organizeTasksByStatus, truncate } from '@/lib/utils';
 import {
   createTaskDocument,
   deleteTaskDocument,
   getTaskCollection,
   updateTaskDocument,
-} from './lib/firebase';
+} from '@/lib/firebase';
+import Navbar from './components/shared/Navbar';
+import { Route, Routes } from 'react-router-dom';
+import DashboardPage from './pages/DashboardPage';
+import Layout from './components/shared/Layout';
 
-const TaskCard = () => {
+interface TaskCardProp {
+  task: Task;
+}
+
+const TaskCard: React.FC<TaskCardProp> = ({ task }) => {
   return (
-    <div className="card w-96 bg-primary text-primary-content">
+    <div className="card card-bordered bg-base-100 shadow-xl">
       <div className="card-body">
-        <h2 className="card-title">Card title!</h2>
-        <p>If a dog chews shoes whose shoes does he choose?</p>
+        <h2 className="card-title">{task.title}</h2>
+        <p>{task.description}</p>
         <div className="card-actions justify-end">
-          <button className="btn">Buy Now</button>
+          <button className="btn btn-primary">View</button>
         </div>
       </div>
     </div>
@@ -119,256 +127,12 @@ const CreateMetaModal: React.FC<CreateMetaModalProps> = ({ onSubmit }) => {
   );
 };
 
-const sampleTasks = [
-  {
-    id: '1',
-    title: 'Deploy the Todo Today App!',
-    description:
-      'Complete the inital MVP with the export feature. Jot down any additional requirements as tickets to be completed later.',
-    status: STATUS.TODO,
-  },
-  {
-    id: '2',
-    title: 'Task 2',
-    description: 'Description 2',
-    status: STATUS.TODO,
-  },
-];
+const App = () => (
+  <Routes>
+    <Route element={<Layout />}>
+      <Route path="/" element={<DashboardPage />} />
+    </Route>
+  </Routes>
+);
 
-export default function App() {
-  const { toast } = useToast();
-  const [tasks, setTasks] = useState<Task[]>(sampleTasks);
-  const [metas, setMetas] = useState<string[]>([]);
-  const [taskIdToDelete, setTaskIdToDelete] = useState<string | null>(null);
-
-  const fetchTaskList = useCallback(async () => {
-    const results = await getTaskCollection();
-    setTasks(results.docs.map((doc) => doc.data()));
-  }, []);
-
-  useEffect(() => {
-    fetchTaskList();
-  }, []);
-
-  const handleCreatingNewMeta = (key: string) => {
-    setMetas([...metas, key]);
-    document.getElementById('create-meta-modal')?.close();
-    toast({ description: `Add meta: ${key}` });
-  };
-
-  const handleCreatingNewTask = (
-    title: string,
-    description: string | null,
-    taskMeta: { [key: string]: string }
-  ) => {
-    const newTask: Task = {
-      id: String(tasks.length + 1), // TODO: this should come from the database
-      title,
-      description,
-      meta: taskMeta,
-      status: STATUS.TODO,
-    };
-
-    createTaskDocument(newTask);
-    fetchTaskList();
-
-    document.getElementById('create-task-modal')?.close();
-
-    toast({ description: 'Task created!' });
-  };
-
-  const handleTaskDeletion = useCallback(async () => {
-    if (!taskIdToDelete) {
-      toast({ description: 'No task selected to delete' });
-    } else {
-      await deleteTaskDocument(taskIdToDelete);
-      await fetchTaskList();
-    }
-
-    document.getElementById('delete-task-modal')?.close();
-  }, [taskIdToDelete]);
-
-  const handleTaskStatusChange = useCallback(
-    async (task: Task, status: AvailableStatus) => {
-      const updatedTask = {
-        ...task,
-        status,
-      };
-
-      await updateTaskDocument(updatedTask);
-      await fetchTaskList();
-
-      toast({ description: 'Task status updated!' });
-    },
-    []
-  );
-
-  const organizeTasksByStatus = (tasks: Task[]) => {
-    return tasks.sort((a, b) => {
-      if (a.status === STATUS.COMPLETED) {
-        return 1;
-      } else if (a.status === STATUS.IN_PROGRESS) {
-        return 0;
-      } else if (a.status === STATUS.TODO) {
-        return -1;
-      }
-    });
-  };
-
-  const parseMetaFromTask = (task: Task, meta: string) => {
-    console.log(task, meta);
-    if (task.meta && task.meta[meta]) {
-      return task.meta[meta];
-    }
-    return null;
-  };
-
-  return (
-    <>
-      {' '}
-      <header className="shadow">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-            Todo Today
-          </h1>
-        </div>
-      </header>
-      <main>
-        <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8">
-          {/* <PomodoroTimer /> */}
-
-          <CreateMetaModal onSubmit={handleCreatingNewMeta} />
-          <CreateTaskModal onSubmit={handleCreatingNewTask} metas={metas} />
-          <DeleteTaskModal
-            onConfirm={() => handleTaskDeletion()}
-            onCancel={() =>
-              document.getElementById('delete-task-modal')?.close()
-            }
-          />
-
-          {/* Action Panel */}
-          <div className="space-y-4">
-            <div className="flex justify-end">
-              <div className="flex space-x-2">
-                <CSVLink data={sampleCsvData}>
-                  <button className="btn btn-primary">Export</button>
-                </CSVLink>
-                <button
-                  className="btn btn-primary"
-                  onClick={() =>
-                    document.getElementById('create-meta-modal')?.showModal()
-                  }
-                >
-                  Add Meta
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={() =>
-                    document.getElementById('create-task-modal')?.showModal()
-                  }
-                >
-                  Add Task
-                </button>
-              </div>
-            </div>
-
-            <div className="card card-bordered bg-base-100">
-              <div className="card-body">
-                <h2 className="card-title">Project A</h2>
-                {/* May need to move this out out of card-body */}
-                <div className="overflow-x-auto -mx-8">
-                  <table className="table table-zebra">
-                    {/* head */}
-                    <thead>
-                      <tr>
-                        <th>Actions</th>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th className="w-44 text-center">Status</th>
-                        {metas.map((meta) => (
-                          <th key={meta}>{meta}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {tasks.length === 0 && (
-                        <tr>
-                          <td colSpan={4} className="text-center">
-                            No tasks added yet
-                          </td>
-                        </tr>
-                      )}
-                      {organizeTasksByStatus(tasks).map((task) => (
-                        <tr key={task.id}>
-                          <th className="w-44">
-                            <div className="space-x-2">
-                              <button className="btn btn-sm btn-primary">
-                                Edit
-                              </button>
-                              <button
-                                className="btn btn-sm btn-outline"
-                                onClick={() => {
-                                  document
-                                    .getElementById('delete-task-modal')
-                                    ?.showModal();
-                                  setTaskIdToDelete(task.id);
-                                }}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </th>
-                          <td>{task.title}</td>
-                          <td>{truncate(task.description ?? '', 29)}</td>
-                          <td>
-                            <select
-                              className="select select-bordered w-full max-w-xs"
-                              value={task.status}
-                              onChange={(event) =>
-                                handleTaskStatusChange(
-                                  task,
-                                  event.target.value as AvailableStatus
-                                )
-                              }
-                            >
-                              <option value="todo">To Do</option>
-                              <option value="in-progress">In Progress</option>
-                              <option value="completed">Completed</option>
-                            </select>
-                          </td>
-                          {metas.map((meta) => (
-                            <td key={`task-${meta}`}>
-                              {parseMetaFromTask(task, meta)}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <div className="card card-bordered bg-base-100">
-              <Calendar />
-            </div>
-          </div>
-
-          {/*
-          <div className="flex flex-col items-center space-y-4 ">
-            {!isAddingNewTask && (
-              <AddTaskAction onClick={() => setIsAddingNewTask(true)} />
-            )}
-            {isAddingNewTask && <CreateTaskModal />}
-
-            <TaskCard />
-            <TaskCard />
-            <TaskCard />
-            <TaskCard />
-          </div>
-          */}
-        </div>
-      </main>
-    </>
-  );
-}
+export default App;
