@@ -3,7 +3,6 @@ import Countdown from 'react-countdown';
 import { AvailableStatus, Task } from '@/lib/interfaces';
 import DeleteTaskModal from '@/components/tasks/DeleteTaskModal';
 import CreateTaskModal from '@/components/tasks/CreateTaskModal';
-import { useToast } from '@/components/ui/use-toast';
 import { CSVLink } from 'react-csv';
 import Calendar from '@/components/Calendar';
 import { STATUS } from '@/lib/constants';
@@ -64,7 +63,6 @@ const CreateMetaModal: React.FC<CreateMetaModalProps> = ({ onSubmit }) => {
 };
 
 const DashboardPage = () => {
-  const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [metas, setMetas] = useState<string[]>([]);
   const [taskIdToDelete, setTaskIdToDelete] = useState<string | null>(null);
@@ -82,7 +80,7 @@ const DashboardPage = () => {
   const handleCreatingNewMeta = (key: string) => {
     setMetas([...metas, key]);
     document.getElementById('create-meta-modal')?.close();
-    toast({ description: `Add meta: ${key}` });
+    console.log({ description: `Add meta: ${key}` });
   };
 
   const handleCreatingNewTask = (
@@ -103,12 +101,12 @@ const DashboardPage = () => {
 
     document.getElementById('create-task-modal')?.close();
 
-    toast({ description: 'Task created!' });
+    console.log({ description: 'Task created!' });
   };
 
   const handleTaskDeletion = useCallback(async () => {
     if (!taskIdToDelete) {
-      toast({ description: 'No task selected to delete' });
+      console.log({ description: 'No task selected to delete' });
     } else {
       await deleteTaskDocument(taskIdToDelete);
       await fetchTaskList();
@@ -127,7 +125,7 @@ const DashboardPage = () => {
       await updateTaskDocument(updatedTask);
       await fetchTaskList();
 
-      toast({ description: 'Task status updated!' });
+      console.log({ description: 'Task status updated!' });
     },
     []
   );
