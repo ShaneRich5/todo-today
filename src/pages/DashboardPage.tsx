@@ -68,6 +68,7 @@ const DashboardPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [metas, setMetas] = useState<string[]>([]);
   const [taskIdToDelete, setTaskIdToDelete] = useState<string | null>(null);
+  const [showCompletedTasks, setShowCompletedTasks] = useState(false);
 
   const fetchTaskList = useCallback(async () => {
     const results = await getTaskCollection();
@@ -186,10 +187,26 @@ const DashboardPage = () => {
 
         <div className="card card-bordered bg-base-100">
           <div className="card-body">
-            <h2 className="card-title">Tasks</h2>
+            <div className="-ml-5 flex justify-between">
+              <h2 className="card-title text-md ">Tasks</h2>
+
+              <div className="form-control">
+                <label className="label cursor-pointer">
+                  <span className="label-text mr-2">Show Completed</span>
+                  <input
+                    type="checkbox"
+                    className="toggle"
+                    checked={showCompletedTasks}
+                    onChange={(event) =>
+                      setShowCompletedTasks(event.target.checked)
+                    }
+                  />
+                </label>
+              </div>
+            </div>
             {/* May need to move this out out of card-body */}
             <div className="overflow-x-auto -mx-8">
-              <table className="table table-zebra">
+              <table className="table table-zebra table-sm">
                 {/* head */}
                 <thead>
                   <tr>
@@ -210,51 +227,58 @@ const DashboardPage = () => {
                       </td>
                     </tr>
                   )}
-                  {organizeTasksByStatus(tasks).map((task) => (
-                    <tr key={task.id}>
-                      <th className="w-44">
-                        <div className="space-x-2">
-                          <button className="btn btn-sm btn-primary">
-                            Edit
-                          </button>
-                          <button
-                            className="btn btn-sm btn-outline"
-                            onClick={() => {
-                              document
-                                .getElementById('delete-task-modal')
-                                ?.showModal();
-                              setTaskIdToDelete(task.id);
-                            }}
+                  {organizeTasksByStatus(tasks)
+                    .filter(
+                      (task) =>
+                        showCompletedTasks ||
+                        (!showCompletedTasks &&
+                          task.status !== STATUS.COMPLETED)
+                    )
+                    .map((task) => (
+                      <tr key={task.id}>
+                        <th className="w-44">
+                          <div className="space-x-2">
+                            <button className="btn btn-sm btn-primary">
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-sm btn-outline"
+                              onClick={() => {
+                                document
+                                  .getElementById('delete-task-modal')
+                                  ?.showModal();
+                                setTaskIdToDelete(task.id);
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </th>
+                        <td>{task.title}</td>
+                        <td>{truncate(task.description ?? '', 29)}</td>
+                        <td>
+                          <select
+                            className="select select-bordered w-full max-w-xs select-sm"
+                            value={task.status}
+                            onChange={(event) =>
+                              handleTaskStatusChange(
+                                task,
+                                event.target.value as AvailableStatus
+                              )
+                            }
                           >
-                            Delete
-                          </button>
-                        </div>
-                      </th>
-                      <td>{task.title}</td>
-                      <td>{truncate(task.description ?? '', 29)}</td>
-                      <td>
-                        <select
-                          className="select select-bordered w-full max-w-xs select-sm"
-                          value={task.status}
-                          onChange={(event) =>
-                            handleTaskStatusChange(
-                              task,
-                              event.target.value as AvailableStatus
-                            )
-                          }
-                        >
-                          <option value="todo">To Do</option>
-                          <option value="in-progress">In Progress</option>
-                          <option value="completed">Completed</option>
-                        </select>
-                      </td>
-                      {metas.map((meta) => (
-                        <td key={`task-${meta}`}>
-                          {parseMetaFromTask(task, meta)}
+                            <option value="todo">To Do</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                          </select>
                         </td>
-                      ))}
-                    </tr>
-                  ))}
+                        {metas.map((meta) => (
+                          <td key={`task-${meta}`}>
+                            {parseMetaFromTask(task, meta)}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
